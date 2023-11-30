@@ -309,26 +309,38 @@ int u(RD **head) {
         return 0;
     }
 
-    int swapped = 1;
-    RD *ptr;
-    RD *ptr_com = NULL;
+    RD *sorted = NULL; //pointer will be used to build the sorted list
 
-    while (swapped) {
-        swapped = 0; //making sure if something does not work loop will be functional only once
-        ptr = *head;
+    while (*head != NULL) {
+        RD *current = *head; //initiates current node at the head of the original list
+        *head = (*head)->next; // moving to the next node
 
-        while (ptr->next != ptr_com) {
-            if (ptr->date > ptr->next->date ||
-                (ptr->date == ptr->next->date && ptr->time > ptr->next->time)) {
-                swap(ptr, ptr->next);
-                swapped = 1;
+        if (sorted == NULL || (current->date < sorted->date) ||
+            (current->date == sorted->date && current->time < sorted->time)) {
+            //Checks if the sorted list is empty or if the current node should be inserted
+            // at the beginning of the sorted list based on date and time
+
+            current->next = sorted;
+            sorted = current; // insert the current node at the beginning of the sorted list
+
+        } else { //if the node need to be inserted elsewhere not at the beginning of the sorted list
+
+            RD *temp = sorted; //temp pointer traverses the sorted list
+            while (temp->next != NULL && (current->date > temp->next->date ||
+                    (current->date == temp->next->date && current->time > temp->next->time))) {
+                temp = temp->next; //Moves temp to the next node in the sorted list
             }
+            //Traverses the sorted list to find the correct position for the current node based on date and time.
 
-            ptr = ptr->next;
+            // Insert the current node into the sorted position
+            current->next = temp->next;
+            temp->next = current;
+            //Inserts the current node into the sorted list at the correct position.
         }
-        ptr_com = ptr;
     }
-    return 1; //printing is made in main with relation of the result
+
+    *head = sorted; // Update the head to point to the sorted list
+    return 1; // 1 indicates successful rearrangement
 }
 
 void r(RD **head) {
@@ -419,16 +431,7 @@ int main() {
 
             case 'k':
             case 'K':
-            {
-                RD *current = head; // Free the allocated memory for the linked list
-                RD *next;
-
-                while (current != NULL) {
-                    next = current->next;
-                    free(current);
-                    current = next;
-                }
-            }
+                free_linked_list(&head);
                 return 0;
 
             default:
